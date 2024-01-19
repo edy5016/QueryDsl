@@ -13,7 +13,7 @@ spring:
        show_sql: true
        format_sql: true
 
-
+spring.jpa.properties.hibernate.use_sql_comments: true 
 logging.level:
  org.hibernate.SQL: debug
 #org.hibernate.type: trace 으로 하면 로그에서 ? 표 볼수있음
