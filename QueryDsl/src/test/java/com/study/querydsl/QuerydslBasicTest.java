@@ -1,6 +1,7 @@
 package com.study.querydsl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.from;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,9 +21,11 @@ import jakarta.transaction.Transactional;
 public class QuerydslBasicTest {
 	@PersistenceContext
 	EntityManager em;
+	JPAQueryFactory queryFactory;
 
 	@BeforeEach
 	public void before() {
+		queryFactory = new JPAQueryFactory(em);
 		Team teamA = new Team("teamA");
 		Team teamB = new Team("teamB");
 		em.persist(teamA);
@@ -55,6 +58,17 @@ public class QuerydslBasicTest {
 				.from(member)
 				.where(member.username.eq("member1"))// 파라미터 바인딩 처리
 				.fetchOne();
+		assertThat(findMember.getUsername()).isEqualTo("member1");
+	}
+	
+	@Test
+	public void search() {
+		Member findMember = queryFactory
+					.select(member)
+					.from(member)
+					.where(member.username.eq("member1")
+					.and(member.age.eq(10)))
+					.fetchOne();
 		assertThat(findMember.getUsername()).isEqualTo("member1");
 	}
 }
