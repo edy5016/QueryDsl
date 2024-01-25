@@ -9,9 +9,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.domain.Member;
+import com.study.querydsl.domain.QMember;
 import com.study.querydsl.domain.Team;
+import com.study.querydsl.dto.MemberDto;
+import com.study.querydsl.dto.UserDto;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -69,4 +76,71 @@ public class QuerydslMiddleTest {
 		}
 	}
 	
+	@Test
+	public void findDtoByJPQL() { 
+		List<MemberDto> result= em.createQuery("select new com.study.querydsl.dto.MemberDto(m.username, m.age) from Member m", MemberDto.class)
+						.getResultList();
+
+		for(MemberDto memberDto : result) {
+			System.out.println("memberDto =" + memberDto);
+		}
+	}
+	
+	@Test
+	public void findDtoBySetter() {
+		List<MemberDto> result = queryFactory
+			.select(Projections.bean(MemberDto.class,
+					member.username, 
+					member.age))
+			.from(member)
+			.fetch();
+		
+		for (MemberDto m : result) {
+			System.out.println("m = "+ m);
+		}
+	}
+	
+	@Test
+	public void findDtoByField() {
+		List<MemberDto> result = queryFactory
+			.select(Projections.fields(MemberDto.class,
+					member.username, 
+					member.age))
+			.from(member)
+			.fetch();
+		
+		for (MemberDto m : result) {
+			System.out.println("m  fields= "+ m);
+		}
+	}
+	@Test
+	public void findDtoByConstructor() {
+		List<MemberDto> result = queryFactory
+			.select(Projections.constructor(MemberDto.class,
+					member.username, 
+					member.age))
+			.from(member)
+			.fetch();
+		
+		for (MemberDto m : result) {
+			System.out.println("m  constructor= "+ m);
+		}
+	}
+	@Test
+	public void findDtoByAlias() {
+		QMember memberSub = new QMember("memberSub");
+		List<UserDto> result = queryFactory
+			.select(Projections.fields(UserDto.class,
+					member.username.as("name"), 
+					ExpressionUtils.as(JPAExpressions
+							.select(memberSub.age.max())
+							.from(memberSub), "age")
+					))
+			.from(member)
+			.fetch();
+		
+		for (UserDto m : result) {
+			System.out.println("Alias= "+ m);
+		}
+	}
 }
