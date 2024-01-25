@@ -6,8 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import javax.naming.spi.DirStateFactory.Result;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,16 +19,18 @@ import com.study.querydsl.domain.QTeam;
 import com.study.querydsl.domain.Team;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceUnit;
 import jakarta.transaction.Transactional;
-import static com.study.querydsl.domain.QMember.member;
 @SpringBootTest
 @Transactional
 public class QuerydslBasicTest {
 	@PersistenceContext
 	EntityManager em;
 	JPAQueryFactory queryFactory;
-
+	@PersistenceUnit
+	EntityManagerFactory emf;
 	@BeforeEach
 	public void before() {
 		queryFactory = new JPAQueryFactory(em);
@@ -234,4 +234,32 @@ public class QuerydslBasicTest {
 			System.out.println("t=" + tuple);
 		}
 	}
+
+	@Test
+	public void fetchJoinNo() throws Exception {
+		em.flush();
+		em.clear();
+		Member findMember = queryFactory
+					.selectFrom(member)
+					.where(member.username.eq("member1"))
+					.fetchOne();
+		
+		boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+		
+		assertThat(loaded).as("페치 조인 미적용").isFalse();
+	}
+	@Test
+	public void fetchJoinUse() throws Exception {
+		em.flush();
+		em.clear();
+		Member findMember = queryFactory
+					.selectFrom(member)
+					.join(member.team, team)
+					.fetchJoin()
+					.where(member.username.eq("member1"))
+					.fetchOne();
+		boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+		assertThat(loaded).as("페치 조인 적용").isTrue();
+	}
+
 }
