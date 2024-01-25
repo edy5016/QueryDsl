@@ -18,6 +18,7 @@ import com.study.querydsl.domain.Member;
 import com.study.querydsl.domain.QMember;
 import com.study.querydsl.domain.Team;
 import com.study.querydsl.dto.MemberDto;
+import com.study.querydsl.dto.QMemberDto;
 import com.study.querydsl.dto.UserDto;
 
 import jakarta.persistence.EntityManager;
@@ -143,4 +144,18 @@ public class QuerydslMiddleTest {
 			System.out.println("Alias= "+ m);
 		}
 	}
+	
+	@Test
+	public void findDtoByQueryProjection() {
+		List<MemberDto> result= queryFactory
+			.select(new QMemberDto(member.username, member.age))
+			.from(member)
+			.fetch();
+		
+		for (MemberDto m : result) {
+			System.out.println("MemberDto= "+ m);
+		}
+		
+	}
+	
 }
