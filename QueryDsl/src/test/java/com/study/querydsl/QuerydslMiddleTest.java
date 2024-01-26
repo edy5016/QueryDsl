@@ -7,6 +7,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
@@ -203,5 +204,42 @@ public class QuerydslMiddleTest {
 
 	private BooleanExpression ageEq(Integer ageCond) {
 		return ageCond != null ? member.age.eq(ageCond) : null;
+	}
+
+	
+	// member1 = 10 => 비회원
+	// member2 = 20 => 비회원
+	// member3 = 30 => 회원
+	// member4 = 40 => 회원
+ 	/**
+ 	 *  벌그연산은 항상 조심. 영속성 컨텍스트에 올라가있어서 수정된 사항 영속컨텍스 상태가 다름
+ 	 *  항상 벌크연산후 영속성 초기화 em.flush(); em.clear();
+ 	 */
+	@Test
+ 	@Commit
+	public void bulkUpdate() { 
+		queryFactory
+			.update(member)
+			.set(member.username, "비회원")
+			.where(member.age.lt(28))
+			.execute();
+	}
+	
+	
+	@Test
+ 	@Commit
+	public void bulkAdd() { 
+		long count = queryFactory
+				 .update(member)
+				 .set(member.age, member.age.add(1))
+				 .execute();
+	}
+	@Test
+ 	@Commit
+	public void bulkDel() { 
+		long count = queryFactory
+				 .delete(member)
+				 .where(member.age.gt(18))
+				 .execute();
 	}
 }
