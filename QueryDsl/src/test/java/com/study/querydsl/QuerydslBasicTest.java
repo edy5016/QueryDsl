@@ -235,7 +235,7 @@ public class QuerydslBasicTest {
 					.fetch();
 		
 		for (Tuple tuple : result) {
-			System.out.println("t=" + tuple);
+			System.out.println("t =" + tuple);
 		}
 	}
 

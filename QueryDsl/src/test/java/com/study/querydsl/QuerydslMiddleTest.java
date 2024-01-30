@@ -1,5 +1,6 @@
 package com.study.querydsl;
 import static com.study.querydsl.domain.QMember.member;
+import static org.assertj.core.api.Assertions.from;
 
 import java.util.List;
 
@@ -11,9 +12,11 @@ import org.springframework.test.annotation.Commit;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.querydsl.domain.Member;
@@ -242,4 +245,20 @@ public class QuerydslMiddleTest {
 				 .where(member.age.gt(18))
 				 .execute();
 	}
+	
+	@Test
+	public void sqlFunction() {
+		List<String> result = queryFactory
+				.select(Expressions.stringTemplate("function('replace', {0}, {1}, {2})", member.username, "member", "M"))
+				.from(member)
+				.fetch();
+		
+		for(String s : result) {
+			System.out.println("S = " +s);
+		}
+	}
+
+
+
+
 }
