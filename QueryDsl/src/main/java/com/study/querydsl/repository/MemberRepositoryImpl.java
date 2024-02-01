@@ -1,20 +1,21 @@
 package com.study.querydsl.repository;
 
-import java.util.List;
-
-import org.hibernate.sql.results.spi.ResultsConsumer;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.util.StringUtils;
-
 import static com.study.querydsl.domain.QMember.member;
 import static com.study.querydsl.domain.QTeam.team;
 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.util.StringUtils;
+
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.study.querydsl.dto.MemberDto;
+import com.study.querydsl.domain.Member;
 import com.study.querydsl.dto.MemberSearchCondition;
 import com.study.querydsl.dto.MemberTeamDto;
 import com.study.querydsl.dto.QMemberTeamDto;
@@ -105,7 +106,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
 				.limit(pageable.getPageSize())
 				.fetch();
 		
-		Long total = queryFactory
+		JPAQuery<MemberTeamDto> countQuery = queryFactory
 				.select(new QMemberTeamDto(
 						member.id,
 						member.username, 
@@ -117,10 +118,10 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
 						usernameEq(condition.getUsername()), 
 						teamNameEq(condition.getTeamName()),
 						ageGoe(condition.getAgeGoe()), 
-						ageLoe(condition.getAgeLoe()))
-				.fetchCount();
+						ageLoe(condition.getAgeLoe()));
 		
-		return new PageImpl<>(result, pageable, total);
+		return PageableExecutionUtils.getPage(result, pageable, () -> countQuery.fetchCount());
+		//return new PageImpl<>(result, pageable, total);
 	}
 	
 }
